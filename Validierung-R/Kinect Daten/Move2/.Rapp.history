@@ -1,0 +1,582 @@
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move2_hip.txt", header=T)
+colnames(move2.chest)
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move2_hip.txt", header=T)
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)#
+#
+colnames(move2.chest)#
+move2.chest$expansion<-move2.chest$Change-move2.hip$Change
+# chest expansion #
+move2.chest.expansion.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move2.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+#
+move2.chest.expansion.ave %>% #
+	lm(expansion~Help+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move2.chest.expansion.ave, file="move2.expansion.ave.txt" )
+length(unique(move2.chest.expansion.ave$Subject))
+write.table(move2.chest.expansion.ave, file="move2.expansion.ave.txt" )
+# chest height#
+move2.chest.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase) %>% #
+	summarize(chest=mean(Change)) #
+	move2.chest.ave	%>% #
+	drop_na() %>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(chest),chest=mean(chest)) %>% #
+	ggplot(aes(Help  , chest,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = chest-se, ymax=chest+se), position="dodge")#
+#
+move2.chest.expansion.ave %>% #
+	lm(chest~Help+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move2.chest.ave, file="move2.chest.ave.txt" )
+# hip height#
+move2.hip.ave<-move2.hip %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase)  %>% #
+	summarize(hip=mean(Change)) #
+	move2.hip.ave	%>% #
+	drop_na() %>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(hip),hip=mean(hip)) %>% #
+	ggplot(aes(Help  , hip,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = hip-se, ymax=hip+se), position="dodge")#
+#
+move2.hip.ave %>% #
+	lm(hip~Help+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move2.hip.ave, file="move2.hip.ave.txt" )
+which(move2.chest.expansion.ave$Subject=="243342")
+move2.chest.expansion.ave$Subject=="243342"
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)
+move2.hip
+move2.chest
+move2.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+move2.chest.expansion.ave
+length(unique(move2.chest.expansion.ave$Subject))
+move2.chest.expansion.ave%>% #
+#
+	drop_na()
+setwd("/Volumes/ERZW/FEUK/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-Kinect /Move1")#
+rm(list = ls(all = TRUE))#
+#
+data<-read.table("move1.diff.txt", header=T)#
+data<-read.table("move1.diff.txt", header=T)#
+#
+data.chest<-read.table("move1.chest.txt", header=T)#
+data.hip<-read.table("move1.hip.txt", header=T)#
+data<-read.table("Kinect_move1_chest.txt", header=T)#
+#
+head(data)#
+library(tidyverse)#
+library(dplyr)#
+library(plyr)#
+library(sciplot)#
+options(scipen=999)#
+#
+Summary.expansion<- ddply(data, #
+                c( "Age_group","Condition", "Subject"),#
+                summarise,   se=se(Change, na.rm=T),#
+                aveChange=mean(Change, na.rm=T))#
+Summary.expansion.ave<- ddply(Summary.expansion, #
+                c( "Age_group","Condition"),#
+                summarise,   se=se(aveChange, na.rm=T),#
+                aveChange=round(mean(aveChange, na.rm=T),5))
+data.chest<-read.table("move1.chest.txt", header=T)
+data<-read.table("Kinect_move1_chest.txt", header=T)#
+#
+head(data)#
+library(tidyverse)#
+library(dplyr)#
+library(plyr)#
+library(sciplot)#
+options(scipen=999)
+setwd("/Volumes/ERZW/FEUK/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-Kinect /Move2")#
+rm(list = ls(all = TRUE))#
+#
+data<-read.table("move2.expansion.txt", header=T)#
+data.chest<-read.table("move2.chest.txt", header=T)#
+cor.test(data$aveChange, data.chest$aveChange)#
+cor.test(data$aveChange, data.chest$aveChange)#
+#
+library(tidyverse)#
+library(dplyr)#
+library(plyr)#
+options(scipen=999)#
+Summary.expansion<- ddply(data, #
+                c( "Help","Condition"),#
+                summarise,   se=round(se(aveChange, na.rm=T),4),#
+                aveChange=round(mean(aveChange, na.rm=T),4))#
+Summary.chest<- ddply(data.chest, #
+                c( "Help","Condition"),#
+                summarise,   se=round(se(aveChange, na.rm=T),4),#
+                aveChange=round(mean(aveChange, na.rm=T),4))#
+   library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.expansion, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.expansion, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.expansion, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/expansion.pdf",  width=6, height=6)#
+dev.off()
+library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.chest, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.chest, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.chest, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/chest.pdf",  width=6, height=6)#
+dev.off()
+setwd("/Volumes/ERZW/FEUK/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-Kinect /Move1")#
+rm(list = ls(all = TRUE))#
+#
+data<-read.table("move1.diff.txt", header=T)#
+data<-read.table("move1.diff.txt", header=T)#
+#
+data.chest<-read.table("move1.chest.txt", header=T)#
+data.hip<-read.table("move1.hip.txt", header=T)#
+data<-read.table("Kinect_move1_chest.txt", header=T)#
+#
+head(data)#
+library(tidyverse)#
+library(dplyr)#
+library(plyr)#
+library(sciplot)#
+options(scipen=999)#
+#
+Summary.expansion<- ddply(data, #
+                c( "Age_group","Condition", "Subject"),#
+                summarise,   se=se(Change, na.rm=T),#
+                aveChange=mean(Change, na.rm=T))#
+Summary.expansion.ave<- ddply(Summary.expansion, #
+                c( "Age_group","Condition"),#
+                summarise,   se=se(aveChange, na.rm=T),#
+                aveChange=round(mean(aveChange, na.rm=T),5))#
+Summary.expansion<- ddply(data, #
+                c( "Age_group","Condition", "Subject"),#
+                summarise,   se=se(Change.diff, na.rm=T),#
+                aveChange=mean(Change.diff, na.rm=T))#
+Summary.expansion.ave<- ddply(Summary.expansion, #
+                c( "Age_group","Condition"),#
+                summarise,   se=se(aveChange, na.rm=T),#
+                aveChange=round(mean(aveChange, na.rm=T),5))
+setwd("/Volumes/ERZW/FEUK/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-Kinect /Move2")#
+rm(list = ls(all = TRUE))#
+#
+data<-read.table("move2.expansion.txt", header=T)#
+data.chest<-read.table("move2.chest.txt", header=T)#
+cor.test(data$aveChange, data.chest$aveChange)#
+cor.test(data$aveChange, data.chest$aveChange)#
+#
+library(tidyverse)#
+library(dplyr)#
+library(plyr)#
+options(scipen=999)#
+Summary.expansion<- ddply(data, #
+                c( "Help","Condition"),#
+                summarise,   se=round(se(aveChange, na.rm=T),4),#
+                aveChange=round(mean(aveChange, na.rm=T),4))#
+Summary.chest<- ddply(data.chest, #
+                c( "Help","Condition"),#
+                summarise,   se=round(se(aveChange, na.rm=T),4),#
+                aveChange=round(mean(aveChange, na.rm=T),4))#
+   library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.expansion, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.expansion, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.expansion, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/expansion.pdf",  width=6, height=6)#
+dev.off()
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)#
+#
+colnames(move1.chest)#
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change#
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+#
+move1.chest.expansion.ave %>% #
+	lm(expansion~Age_group+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move1.chest.expansion.ave, file="move1.expansion.ave.txt" )
+library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.chest, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.chest, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.chest, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/chest.pdf",  width=6, height=6)#
+dev.off()
+# chest height#
+move1.chest.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(chest=mean(Change)) #
+	move1.chest.chest.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(chest),chest=mean(chest)) %>% #
+	ggplot(aes(Age_group  , chest,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = chest-se, ymax=chest+se), position="dodge")#
+#
+move1.chest.expansion.ave %>% #
+	lm(chest~Age_group+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move1.chest.ave, file="move1.chest.ave.txt" )#
+# hip height
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+#
+move1.chest.expansion.ave %>% #
+	lm(expansion~Age_group+Condition+Phase, data=.)%>% #
+	summary()#
+write.table(move1.chest.expansion.ave, file="move1.expansion.ave.txt" )#
+# chest height
+library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.expansion, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.expansion, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.expansion, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/expansion.pdf",  width=6, height=6)#
+dev.off()
+library(sciplot)#
+pd<-position_dodge(0.9)#
+   quartz(6,6)#
+   bar1<-ggplot(#
+Summary.chest, aes(y=aveChange, x = Help,fill=Condition)) #
+bar1+geom_bar(aes(y=aveChange, x = Help,fill=Condition),#
+              position="dodge",data=Summary.chest, stat="identity")+#
+  geom_errorbar(aes(ymin = aveChange-se, ymax=aveChange+se),data = Summary.chest, position=pd,  width = 0.1)+#
+    labs(y="Change in Chest Height (cm)") +theme_classic()+#
+  scale_fill_manual(values = c("tomato2", "lightskyblue"))+scale_y_continuous(breaks=c(-.012,0,.01), limits=c(-.012,.02), labels=c(-1,0,1))+ theme(legend.position="top")#
+dev.copy(pdf,"../Move2/chest.pdf",  width=6, height=6)#
+dev.off()
+length(unique(move2.chest.expansion.ave$Subject))#
+# chest expansion #
+move2.chest.expansion.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	move2.chest.expansion.ave%>% #
+#
+	drop_na()
+quartz(6,6)#
+	move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+dev.new()	#
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	dev.copy(pdf,"../expansion.pdf",  width=6, height=6)#
+dev.off()
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)#
+#
+colnames(move2.chest)#
+move2.chest$expansion<-move2.chest$Change-move2.hip$Change#
+#
+length(unique(move2.chest.expansion.ave$Subject))#
+# chest expansion #
+move2.chest.expansion.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+dev.new()	#
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	dev.copy(pdf,"../expansion.pdf",  width=6, height=6)#
+dev.off()
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)#
+#
+colnames(move2.chest)#
+move2.chest$expansion<-move2.chest$Change-move2.hip$Change#
+#
+length(unique(move2.chest.expansion.ave$Subject))#
+# chest expansion #
+move2.chest.expansion.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+dev.new()	#
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	dev.copy(pdf,"../expansion.pdf",  width=6, height=6)#
+dev.off()
+quartz(6,6)#
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	dev.copy(pdf,"../expansion.pdf",  width=6, height=6)#
+dev.off()
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)#
+#
+colnames(move1.chest)#
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change#
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)#
+#
+colnames(move1.chest)#
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change#
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+#
+move1.chest.expansion.ave %>% #
+	lm(expansion~Age_group+Condition+Phase, data=.)%>% #
+	summary()
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion))
+move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)#
+#
+colnames(move1.chest)#
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change#
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")#
+library(sciplot)#
+library(tidyverse)#
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)#
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)#
+#
+colnames(move1.chest)#
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change#
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+	move1.chest.expansion.ave	%>% #
+	drop_na() %>% #
+	group_by( Age_group  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Age_group  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1")
+library(sciplot)
+library(tidyverse)
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)
+colnames(move1.chest)
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion))
+move1.chest.expansion.ave
+move1.chest<-read.table("Kinect_move1_chest.txt", header=T)
+move1.hip<-read.table("Kinect_move1_hip.txt", header=T)
+colnames(move1.chest)
+move1.chest$expansion<-move1.chest$Change-move1.hip$Change
+move1.chest.expansion.ave
+# chest expansion #
+move1.chest.expansion.ave<-move1.chest %>% #
+	group_by(Subject  ,   Gender    , Age_group  , Condition  , Game   ,     Team     ,   Phase ) %>% #
+	summarize(expansion=mean(expansion))
+move1.chest.expansion.ave
+move1.chest.expansion.ave
+rm(list=all)#
+#
+setwd("/Volumes/FEUK-1/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")#
+library(sciplot)#
+library(tidyverse)#
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)#
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)#
+#
+colnames(move2.chest)#
+move2.chest$expansion<-move2.chest$Change-move2.hip$Change#
+#
+length(unique(move2.chest.expansion.ave$Subject))#
+# chest expansion #
+move2.chest.expansion.ave<-move2.chest %>% #
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% #
+	summarize(expansion=mean(expansion)) #
+quartz(6,6)#
+move2.chest.expansion.ave	%>% #
+	group_by( Help  ,Condition  )%>% #
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% #
+	ggplot(aes(Help  , expansion,  fill=Condition))+#
+	geom_bar(stat="identity", position="dodge")+#
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")#
+	dev.copy(pdf,"../expansion.pdf",  width=6, height=6)#
+dev.off()

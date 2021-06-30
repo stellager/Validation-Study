@@ -1,0 +1,7 @@
+"ICC" "F" "df1" "df2" "p" "lower bound" "upper bound"
+"Single_raters_absolute" 0.55 3.4 59 60 0 0.38 0.68
+"Single_random_raters" 0.55 3.6 59 59 0 0.38 0.68
+"Single_fixed_raters" 0.57 3.6 59 59 0 0.4 0.69
+"Average_raters_absolute" 0.71 3.4 59 60 0 0.55 0.81
+"Average_random_raters" 0.71 3.6 59 59 0 0.56 0.81
+"Average_fixed_raters" 0.72 3.6 59 59 0 0.57 0.82

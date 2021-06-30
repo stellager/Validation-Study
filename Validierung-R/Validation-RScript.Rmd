@@ -1,0 +1,1070 @@
+---
+title: Validation Study Analyses 
+author: S Gerdemann
+Date: 30.06.2021
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#  Load Required Packages
+```{r message=FALSE}
+
+rm(list = ls(all = TRUE))
+library(kableExtra)
+library("psych")
+library(tidyverse)
+library(car)
+library(sciplot)
+library(ggplot2)
+library(ggsci)
+library(broom)
+library(ggpattern)
+library("ggrepel")
+
+setwd("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R")
+pd<-position_dodge(0.9)
+
+#####
+# (1) there were a couple of instances where Dieu-Anh had left two names for Move2 emotion cues (have her double check them); (2) or Jasmin it was unclear which Dyad for NeeCo2 was used (mistake on my end) => It looks like this is fine. 
+#####
+
+
+```
+
+
+
+
+# Body Posture Data 
+## Chest Height 
+### Read in the data 
+```{r }
+move1.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1/move1.chest.ave.txt")
+
+move2.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2/move2.chest.ave.txt")
+
+neeco2.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo2/neeco2.chest.ave.txt")
+
+neeco3.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo3/NeeCo3.chest.txt")
+
+proshame1.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame1/chest.ProShame1.txt")
+
+proshame2.chest<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame2/ProShame2_chest.height.txt")
+```
+### Prepare Variables 
+```{r results='hide'}
+
+neeco3.chest$Subject <- paste(neeco3.chest$Target, neeco3.chest$Dyade, sep="_")
+
+proshame2.chest<-proshame2.chest %>% rename("Subject"="ID", "Subject_long"="Subject")
+proshame1.chest<-proshame1.chest %>% rename("Subject"="Subj_ID")
+
+
+proshame2.chest<-proshame2.chest %>% 
+  filter(Trial=="Test 1")
+
+##Add Study Information
+
+proshame1.chest$Study<-"ProShame1"
+proshame2.chest$Study<-"ProShame2"
+neeco3.chest$Study<-"NeeCo3"
+neeco2.chest$Study<-"NeeCo2"
+move1.chest$Study<-"Move1"
+move2.chest$Study<-"Move2"
+
+
+
+ProShame2_chest_sub<-proshame2.chest %>% 
+  select(Subject, Study, Mean, Age.cont, Gender)%>% 
+  rename( "chest"="Mean", "Age_years"="Age.cont")
+
+ProShame1_chest_sub<-proshame1.chest %>% 
+  select(Subject, Study,Mean, Age,Gender)%>% 
+  rename( "chest"="Mean","Age_years"="Age")
+
+NeeCo3_chest_sub<-neeco3.chest %>% 
+   drop_na() %>% 
+  select(Subject, Study,Mean, Age,Gender)%>% 
+  rename("chest"="Mean","Age_years"="Age")
+
+NeeCo2_chest_sub<-neeco2.chest %>% 
+   drop_na() %>% 
+  select(Subject, Study, Chest, Age_years,Gender) %>% 
+  rename("chest"="Chest")
+
+Move1_chest_sub<-move1.chest %>% 
+   drop_na() %>% 
+  select(Subject, Study,chest,Phase, Age_years, Gender)
+
+Move2_chest_sub<-move2.chest %>% 
+   drop_na() %>% 
+  select(Subject, Study,chest, Phase, Age_years,Gender)
+  
+NeeCo2_chest_sub$Phase<-"Test_1"
+NeeCo3_chest_sub$Phase<-"Test_1"
+ProShame1_chest_sub$Phase<-"Test_1"
+ProShame2_chest_sub$Phase<-"Test_1"
+
+
+
+Kinect_chest<-rbind(ProShame2_chest_sub, ProShame1_chest_sub, NeeCo2_chest_sub, NeeCo3_chest_sub,Move1_chest_sub, Move2_chest_sub)
+
+Kinect_chest$Gender<-as.factor(Kinect_chest$Gender)
+levels(Kinect_chest$Gender)
+Kinect_chest$Gender<-Kinect_chest$Gender%>%
+  as_factor()%>%
+ dplyr::recode("F"="f","female"="f","w"="f", "M"="m", "male"="m")
+
+
+```
+
+## Chest Expansion
+### Read in the data 
+```{r}
+
+move1.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1/move1.expansion.ave.txt", header=T)
+
+
+move2.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2/move2.expansion.ave.txt", header=T)
+
+neeco2.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo2/neeco2.chest.expansion.ave.txt", header=T)
+
+neeco3.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo3/NeeCo3.expansion.txt", header=T)
+
+proshame1.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame1/expansion.ProShame1.txt", header=T)
+
+proshame2.expansion<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame2/ProShame2_expansion.txt", header=T)
+```
+
+### Prepare variables
+```{r results='hide'}
+
+neeco3.expansion$Subject <- paste(neeco3.expansion$Target, neeco3.expansion$Dyade, sep="_")
+
+
+proshame2.expansion<-proshame2.expansion %>% rename("Subject"="ID", "Subject_long"="Subject")
+proshame1.expansion<-proshame1.expansion %>% rename("Subject"="Subj_ID")
+
+
+proshame2.expansion<-proshame2.expansion %>% 
+  filter(Trial=="Test_1")
+
+##Add Study Information
+
+proshame1.expansion$Study<-"ProShame1"
+proshame2.expansion$Study<-"ProShame2"
+neeco3.expansion$Study<-"NeeCo3"
+neeco2.expansion$Study<-"NeeCo2"
+move1.expansion$Study<-"Move1"
+move2.expansion$Study<-"Move2"
+
+
+
+
+ProShame2_expansion_sub<-proshame2.expansion %>% 
+  select(Subject, Study, Mean, Age.cont, Gender)%>% 
+  rename( "expansion"="Mean","Age_years"="Age.cont")
+
+ProShame1_expansion_sub<-proshame1.expansion %>% 
+  select(Subject, Study,Mean, Age,Gender)%>% 
+  rename( "expansion"="Mean","Age_years"="Age")
+
+NeeCo3_expansion_sub<-neeco3.expansion %>% 
+   drop_na() %>% 
+  select(Subject, Study,Mean, Age, Gender)%>% 
+  rename("expansion"="Mean","Age_years"="Age")
+
+NeeCo2_expansion_sub<-neeco2.expansion %>% 
+   drop_na() %>% 
+  select(Subject, Study, expansion, Age_years,Gender) %>% 
+  rename("expansion"="expansion")
+
+Move1_expansion_sub<-move1.expansion %>% 
+   drop_na() %>% 
+  select(Subject, Study,expansion,Phase,Age_years, Gender)
+
+Move2_expansion_sub<-move2.expansion %>% 
+   drop_na() %>% 
+  select(Subject, Study,expansion, Phase,Age_years, Gender)
+  
+NeeCo2_expansion_sub$Phase<-"Test_1"
+NeeCo3_expansion_sub$Phase<-"Test_1"
+ProShame1_expansion_sub$Phase<-"Test_1"
+ProShame2_expansion_sub$Phase<-"Test_1"
+
+
+
+Kinect_expansion<-rbind(ProShame2_expansion_sub, ProShame1_expansion_sub, NeeCo2_expansion_sub, NeeCo3_expansion_sub,Move1_expansion_sub, Move2_expansion_sub)
+
+
+Kinect_expansion$Gender<-Kinect_expansion$Gender%>%as_factor()%>%
+ dplyr::recode("F"="f","female"="f","w"="f", "M"="m", "male"="m")
+
+head(Kinect_expansion)
+nrow(Kinect_chest)
+
+```
+
+
+
+## Hip Height 
+### Read in the data 
+```{r }
+
+move1.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move1/move1.hip.ave.txt")
+
+
+move2.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2/move2.hip.ave.txt")
+
+neeco2.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo2/neeco2.hip.ave.txt")
+
+neeco3.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/NeeCo3/NeeCo3.hip.txt")
+
+proshame1.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame1/hip.ProShame1.txt")
+
+proshame2.hip<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/ProShame2/ProShame2_hip.height.txt")
+```
+
+
+### TO DO: Prepare Variables
+
+
+# Validation Coding
+## Dieu-Anhs Data (Coder 2)
+### Read in the data 
+```{r, echo=FALSE, include=FALSE}
+
+Move1_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/Move1_DieuAnh.txt", header=T)
+Move2_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/Move2_DieuAnh.txt", header=T)
+NeeCo2_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/NeeCo2_DieuAnh.txt", header=T)
+NeeCo3_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/NeeCo3_DieuAnh.txt", header=T)
+ProShame1_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/ProShame1_DieuAnh.txt", header=T)
+ProShame2_DieuAnh<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_DieuAnh/ProShame2_DieuAnh.txt", header=T)
+
+```
+
+### Prepare variables 
+
+````{r results='hide'}
+head(Move1_DieuAnh)
+head(Move2_DieuAnh)
+head(ProShame1_DieuAnh)
+head(ProShame2_DieuAnh)
+head(NeeCo2_DieuAnh)
+head(NeeCo3_DieuAnh)
+
+
+
+#First create one subject 
+NeeCo3_DieuAnh$Subject <- paste(NeeCo3_DieuAnh$Target, NeeCo3_DieuAnh$Dyade, sep="_")
+
+ProShame2_DieuAnh
+
+ProShame2_DieuAnh<-ProShame2_DieuAnh %>% rename("Subject"="ID_c1")
+ProShame1_DieuAnh<-ProShame1_DieuAnh %>% rename("Subject"="Subj_ID")
+
+
+##Add Study Information
+
+ProShame1_DieuAnh$Study<-"ProShame1"
+ProShame2_DieuAnh$Study<-"ProShame2"
+NeeCo3_DieuAnh$Study<-"NeeCo3"
+NeeCo2_DieuAnh$Study<-"NeeCo2"
+Move1_DieuAnh$Study<-"Move1"
+Move2_DieuAnh$Study<-"Move2"
+
+
+
+Move1_DieuAnh_sub <-Move1_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1", "Phase")
+
+Move2_DieuAnh_sub <-Move2_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1", "Phase")
+
+NeeCo2_DieuAnh_sub <-NeeCo2_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+
+NeeCo3_DieuAnh_sub <-NeeCo3_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+
+ProShame1_DieuAnh_sub <-ProShame1_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+
+ProShame2_DieuAnh_sub <-ProShame2_DieuAnh %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+
+
+
+ProShame2_DieuAnh_sub$Phase<-"Test_1"
+ProShame1_DieuAnh_sub$Phase<-"Test_1"
+NeeCo2_DieuAnh_sub$Phase<-"Test_1"
+NeeCo3_DieuAnh_sub$Phase<-"Test_1"
+
+Validation_Dieu_Anh<-rbind(Move1_DieuAnh_sub, 
+Move2_DieuAnh_sub,ProShame2_DieuAnh_sub, ProShame1_DieuAnh_sub, NeeCo2_DieuAnh_sub, NeeCo3_DieuAnh_sub )
+
+#Rename Dieu Anhs Data to Valence_c2 etc. 
+Validation_Dieu_Anh<-Validation_Dieu_Anh%>%
+ rename("Valence_c2"="Valence_c1", "Arousal_c2"="Arousal_c1", "Emotion_c2"="Emotion_c1", "Emotion_cue_c2"="Emotion_cue_c1")
+
+
+#Initial checks
+cor.test(Validation_Dieu_Anh$Arousal_c2,Validation_Dieu_Anh$Valence_c2)
+
+#Some descriptives
+Validation_Dieu_Anh %>%
+ group_by(Study) %>%
+summarize(mean_arousal=mean(Arousal_c2), mean_valence=mean(Valence_c2)) 
+
+#Emotion word
+addmargins(table(Validation_Dieu_Anh$Emotion_c2, Validation_Dieu_Anh$Study))
+
+```
+
+
+
+
+
+## Jasmins Data (Coder 1)
+### Read in the data 
+```{r }
+
+Move1_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/Move1_Jasmin.txt", header=T)
+Move2_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/Move2_Jasmin.txt", header=T)
+NeeCo2_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/NeeCo2_Jasmin.txt", header=T)
+NeeCo3_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/NeeCo3_Jasmin.txt", header=T)
+ProShame1_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/ProShame1_Jasmin.txt", header=T)
+ProShame2_Jasmin<-read.table("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Validationcoding_Jasmin/ProShame2_Jasmin.txt", header=T)
+
+```
+
+### Prepare variables 
+````{r message=F, results='hide'}
+head(Move1_Jasmin)
+head(Move2_Jasmin)
+head(ProShame1_Jasmin)
+head(ProShame2_Jasmin)
+head(NeeCo2_Jasmin)
+head(NeeCo3_Jasmin)
+
+
+
+#First create one subject 
+NeeCo3_Jasmin$Subject <- paste(NeeCo3_Jasmin$Target, NeeCo3_Jasmin$Dyade, sep="_")
+
+ProShame2_Jasmin
+
+ProShame2_Jasmin<-ProShame2_Jasmin %>% dplyr::rename("Subject"="ID_c1")
+ProShame1_Jasmin<-ProShame1_Jasmin %>% dplyr::rename("Subject"="Subj_ID")
+
+
+##Add Study Information
+
+ProShame1_Jasmin$Study<-"ProShame1"
+ProShame2_Jasmin$Study<-"ProShame2"
+NeeCo3_Jasmin$Study<-"NeeCo3"
+NeeCo2_Jasmin$Study<-"NeeCo2"
+Move1_Jasmin$Study<-"Move1"
+Move2_Jasmin$Study<-"Move2"
+
+
+
+Move1_Jasmin_sub <-Move1_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1", "Phase")
+Move2_Jasmin_sub <-Move2_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1", "Phase")
+NeeCo2_Jasmin_sub <-NeeCo2_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+NeeCo3_Jasmin_sub <-NeeCo3_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+ProShame1_Jasmin_sub <-ProShame1_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+ProShame2_Jasmin_sub <-ProShame2_Jasmin %>% select("Arousal_c1", "Valence_c1", "Subject","Study", "Emotion_c1", "Emotion_cue_c1")
+
+Move1_Jasmin_sub
+ProShame2_Jasmin_sub$Phase<-"Test_1"
+ProShame1_Jasmin_sub$Phase<-"Test_1"
+NeeCo2_Jasmin_sub$Phase<-"Test_1"
+NeeCo3_Jasmin_sub$Phase<-"Test_1"
+
+Validation_Jasmin<-rbind(Move1_Jasmin_sub, 
+Move2_Jasmin_sub,ProShame2_Jasmin_sub, ProShame1_Jasmin_sub, NeeCo2_Jasmin_sub, NeeCo3_Jasmin_sub )
+
+nrow(Validation_Jasmin)
+
+cor.test(Validation_Jasmin$Arousal_c1,Validation_Jasmin$Valence_c1)
+
+
+
+Validation_Jasmin %>%
+ group_by(Study) %>%
+summarise(mean_arousal=mean(Arousal_c1), mean_valence=mean(Valence_c1)) 
+
+addmargins(table(
+Validation_Jasmin$Emotion_c1, 
+Validation_Jasmin$Study))
+
+```
+
+
+# Interrater Agreement
+
+````{r message=F}
+Validation_c1_c2<-full_join(Validation_Jasmin, Validation_Dieu_Anh)
+## Remove two subjects here 
+
+#examining correlations and ICCs 
+cor(Validation_c1_c2$Arousal_c1,Validation_c1_c2$Arousal_c2) %>% as.data.frame() %>% round(.,3)  %>% write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/cor_arousal.txt")
+
+cor(Validation_c1_c2$Valence_c1,Validation_c1_c2$Valence_c2) %>% as.data.frame() %>% round(.,3)  %>% write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/cor_valence.txt")
+
+#Arousal ICC: Looks good 
+Arousal_ICC<-Validation_c1_c2 %>%  select(Arousal_c1, Arousal_c2)   %>% ICC()
+Arousal_ICC$results  %>% as.data.frame()%>% select(where(is.numeric))%>% round(.,2)%>%kbl() %>%
+  kable_styling()
+
+Arousal_ICC<-Validation_c1_c2 %>%  select(Arousal_c1, Arousal_c2)   %>% ICC()
+Arousal_ICC$results  %>% as.data.frame()%>% select(where(is.numeric))%>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC.txt")
+
+#Valence ICC: Looks good 
+Valence_ICC<-Validation_c1_c2 %>%select(Valence_c1, Valence_c2)   %>% ICC()
+Valence_ICC$results  %>% as.data.frame()%>% select(where(is.numeric))%>% round(.,2)%>%kbl() %>%
+  kable_styling()
+
+Valence_ICC<-Validation_c1_c2 %>%select(Valence_c1, Valence_c2)   %>% ICC()
+Valence_ICC$results  %>% as.data.frame()%>% select(where(is.numeric))%>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC.txt")
+
+# By study 
+Validation_c1_c2%>%
+  group_by(Study) %>%
+  summarize(COR=round(cor(Arousal_c1, Arousal_c2),2)) %>%
+  write.table(.,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Correlation_Arousal_Validation.txt")
+  
+
+Validation_c1_c2%>%
+  group_by(Study) %>%
+  summarize(COR=round(cor(Valence_c1, Valence_c2),2)) %>%
+  write.table(.,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Correlation_Valence_Validation.txt")
+
+
+ICC_Valence_Move1<-Validation_c1_c2%>%
+  filter(Study=="Move1")%>%select(Valence_c1, Valence_c2)   %>%  ICC()
+ICC_Valence_Move2<-Validation_c1_c2%>%
+  filter(Study=="Move2")%>%select(Valence_c1, Valence_c2)   %>%  ICC()
+ICC_Valence_ProShame1<-Validation_c1_c2%>%
+  filter(Study=="ProShame1")%>%select(Valence_c1, Valence_c2)   %>%  ICC()
+ICC_Valence_ProShame2<-Validation_c1_c2%>%
+  filter(Study=="ProShame2")%>%select(Valence_c1, Valence_c2)   %>%  ICC()
+ICC_Valence_NeeCo2<-Validation_c1_c2%>%
+  filter(Study=="NeeCo2")%>%select(Valence_c1, Valence_c2)   %>%  ICC()
+ICC_Valence_NeeCo3<-Validation_c1_c2%>%
+  filter(Study=="NeeCo3")%>%select(Valence_c1, Valence_c2)   %>% ICC()
+
+ICC_Valence_NeeCo3$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_NeeCo3.txt")
+ICC_Valence_NeeCo2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_NeeCo2.txt")
+ICC_Valence_ProShame1$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_ProShame1.txt")
+ICC_Valence_ProShame2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_ProShame2.txt")
+ICC_Valence_Move1$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_Move1.txt")
+ICC_Valence_Move2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Valence_ICC_Move2.txt")
+
+
+
+
+ICC_Arousal_Move1<-Validation_c1_c2%>%
+  filter(Study=="Move1")%>%select(Arousal_c1, Arousal_c2)   %>%  ICC()
+ICC_Arousal_Move2<-Validation_c1_c2%>%
+  filter(Study=="Move2")%>%select(Arousal_c1, Arousal_c2)   %>%  ICC()
+ICC_Arousal_ProShame1<-Validation_c1_c2%>%
+  filter(Study=="ProShame1")%>%select(Arousal_c1, Arousal_c2)   %>%  ICC()
+ICC_Arousal_ProShame2<-Validation_c1_c2%>%
+  filter(Study=="ProShame2")%>%select(Arousal_c1, Arousal_c2)   %>%  ICC()
+ICC_Arousal_NeeCo2<-Validation_c1_c2%>%
+  filter(Study=="NeeCo2")%>%select(Arousal_c1, Arousal_c2)   %>%  ICC()
+ICC_Arousal_NeeCo3<-Validation_c1_c2%>%
+  filter(Study=="NeeCo3")%>%select(Arousal_c1, Arousal_c2)   %>% ICC()
+
+ICC_Arousal_NeeCo3$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_NeeCo3.txt")
+ICC_Arousal_NeeCo2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_NeeCo2.txt")
+ICC_Arousal_ProShame1$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_ProShame1.txt")
+ICC_Arousal_ProShame2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_ProShame2.txt")
+ICC_Arousal_Move1$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_Move1.txt")
+ICC_Arousal_Move2$results  %>%     as.data.frame()%>%select(where(is.numeric)) %>% round(.,2)%>%write.table(., file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Correlations/Arousal_ICC_Move2.txt")
+
+
+```
+
+
+# Research Question 1
+
+Are changes in body posture predicted by emotion valence and/or arousal? (Preregistered)
+
+## Chest height 
+
+### Prepare variables
+```{r message=F ,results='hide'}
+
+Chest_merge<-full_join(Validation_c1_c2, Kinect_chest)  %>% 
+  drop_na()
+
+setdiff(  Validation_c1_c2$Subject,Kinect_chest$Subject )
+
+##Kinect data for two subjects is missing & the data is dropped 
+which(Validation_c1_c2$Subject==c( "243136"))
+which(Validation_c1_c2$Subject==c( "243341"))
+
+Validation_c1_c2[117,]
+Validation_c1_c2[102,]
+
+##two subjects are missing from move
+length(unique(Move2_expansion_sub$Subject))
+
+#Average across both C1 and 2
+Chest_merge<- Chest_merge%>% 
+    rowwise() %>% 
+    mutate(Arousal_ave=mean(c(Arousal_c1,Arousal_c2)))%>% 
+    mutate(Valence_ave=mean(c(Valence_c1,Valence_c2)))
+```
+
+### Model Results
+```{r message=F}
+
+   Chest.Model1<-  lm(chest*100~(Arousal_ave+Valence_ave)^2+Gender+Age_years, data=Chest_merge)
+
+#Chest.Model1%>%
+#  summary()
+   
+Chest.Model1.df<-Chest.Model1%>%
+     tidy(.)%>%
+     mutate(estimate=round(estimate,3), std.error=round(std.error,3),statistic=round(statistic ,3),p.value=round(p.value ,3), ci.lower=  estimate-round(std.error*1.96,3), ci.upper=estimate+round(std.error*1.96,3))
+
+Chest.Model1.df %>%
+  kbl() %>%
+  kable_styling()
+
+Chest.Model1%>%
+     glance(.)%>%
+  select(where(is.numeric))%>%
+  round(.,3)%>%
+kbl() %>%
+  kable_styling()
+
+  write.table(Chest.Model1.df, file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Model.Res/Chest.Mod1.txt",sep="\t")
+
+
+   Chest.Model2<-lm(chest*100~Arousal_ave+Valence_ave+Gender+Age_years, data=Chest_merge)
+   
+   Chest.Model2.df<-Chest.Model2%>%
+     tidy(.)%>%
+     mutate(estimate=round(estimate,3), std.error=round(std.error,3),statistic=round(statistic ,3),p.value=round(p.value ,3), ci.lower=  estimate-round(std.error*1.96,3), ci.upper=estimate+round(std.error*1.96,3))
+
+  Chest.Model2.df %>%
+  kbl() %>%
+  kable_styling()
+
+
+Chest.Model2%>%
+     glance(.)%>%
+  select(where(is.numeric))%>%
+  round(.,3)%>%
+kbl() %>%
+  kable_styling()
+  write.table(Chest.Model2.df, file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Model.Res/Chest.Mod2.txt",sep="\t")
+
+  
+# Variance Inflation Factor: Looks ok 
+vif(Chest.Model2)%>%
+kbl() %>%
+  kable_styling()
+ 
+```
+To summarize only variation in valence, but not in arousal, is predictive of the change in children's chest height. The following plots illustrate the relation between the change in chest height and emotion valence. Note: additional plots for the relation between arousal and the change in chest height are still in progress. 
+
+### Plots
+```{r message=F}
+  #dev.new()
+  Chest.Model2.df%>%
+    filter(term!="(Intercept)")%>%
+  ggplot(aes(term,estimate),data.)+
+	geom_errorbar(aes(ymin = ci.lower, ymax=ci.upper), width=.0)+geom_point()+geom_hline(yintercept = 0, linetype="dashed")+coord_flip()+theme_bw(base_size = 12)+ylab("Estimates of Model 2 (Error Bars Indicate \n95% Confidence Intervals)")
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Model.Est.pdf",  width=10, height=6)
+#dev.off()
+
+
+# We can also plot the relation using geom_smooth and the raw data 
+ # dev.new()
+  Chest_merge%>%
+  ggplot(aes(Valence_ave,chest*100),data.)+
+	geom_smooth(method=lm)+ylab("Change in Chest Height (cm)")
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Rel.Valence.ChestHeight.pdf",  width=10, height=6)
+#dev.off()
+
+
+  Chest_merge$Valence_ave.fct<-as.factor(as.character(  Chest_merge$Valence_ave))
+# Alternatively we can 'bin' changes in valence into different groups and plot the change in chest height by this factor
+ # dev.new()  
+  Chest_merge%>%
+    group_by(Valence_ave.fct)%>%
+    summarize( se=se(chest*100),change=mean(chest*100), n=length(chest))%>%
+    mutate(label = paste0(Valence_ave.fct,'\nN = ',n))%>%
+  ggplot(aes(label,change),data.)+
+	geom_bar(stat="identity")+geom_errorbar(aes(ymin = change-se, ymax=change+se), width=.1)+ylab("Change in Body Posture (cm)")+xlab("Valence")
+
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Rel.Valence.Fct.ChestHeight.pdf",  width=10, height=6)
+#dev.off()
+```
+
+
+### Exploratory Analyses
+
+Here I had a look at the model estimates within each study;this analysis is not completed. 
+
+````{r results='hide' , message=F}
+Chest_merge %>%
+  filter(Study %in% c("Move1", "Move2", "NeeCo3", "NeeCo2"))%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+
+
+
+
+  Chest_merge %>%
+    filter(Study=="ProShame1")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+  summary()
+#Valence effect: negative, but almost zero
+
+  Chest_merge %>%
+    filter(Study=="ProShame2")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+  summary()
+ #Valence effect: negative, clearly 
+ 
+  
+  Chest_merge %>%
+    filter(Study=="NeeCo3")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+  summary()
+  #Valence effect: positive
+
+  
+  
+  Chest_merge %>%
+    filter(Study=="NeeCo2")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+  summary()
+   #Valence effect: positive, but almost zero
+ 
+  
+  Chest_merge %>%
+    filter(Study=="Move1")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+  summary()
+  #Valence effect: positve, but almost zero 
+
+  Chest_merge %>%
+    filter(Study=="Move2")%>%
+  lm(chest~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>%
+ summary()
+  #Valence effect: positve, but almost zero 
+
+```
+
+
+
+## Chest Expansion 
+### Prepare variables 
+```{r message=F, results='hide'}
+Expansion_merge<-full_join(Validation_c1_c2, Kinect_expansion)  %>% 
+  drop_na()
+
+setdiff(  Validation_c1_c2$Subject,Kinect_expansion$Subject )
+
+##Two subjects are still missing. 
+which(Validation_c1_c2$Subject==c( "243136"))
+which(Validation_c1_c2$Subject==c( "243341"))
+Validation_c1_c2[117,]
+Validation_c1_c2[102,]
+
+##two subjects are missing from move
+length(unique(Move2_expansion_sub$Subject))
+Expansion_merge<- Expansion_merge%>% 
+    rowwise() %>% 
+    mutate(Arousal_ave=mean(c(Arousal_c1,Arousal_c2)))%>% 
+    mutate(Valence_ave=mean(c(Valence_c1,Valence_c2)))
+```
+
+### Model Results
+```{r message=F}
+
+   Expansion.Model1<-  lm(expansion*100~(Arousal_ave+Valence_ave)^2+Gender+Age_years, data=Expansion_merge)
+
+#Expansion.Model1%>%
+#  summary()
+   
+Expansion.Model1.df<-Expansion.Model1%>%
+     tidy(.)%>%
+     mutate(estimate=round(estimate,3), std.error=round(std.error,3),statistic=round(statistic ,3),p.value=round(p.value ,3), ci.lower=  estimate-round(std.error*1.96,3), ci.upper=estimate+round(std.error*1.96,3))
+
+Expansion.Model1.df %>%
+  kbl() %>%
+  kable_styling()
+
+Expansion.Model1%>%
+     glance(.)%>%
+  select(where(is.numeric))%>%
+  round(.,3)%>%
+kbl() %>%
+  kable_styling()
+
+  write.table(Expansion.Model1.df, file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Model.Res/Expansion.Mod1.txt",sep="\t")
+
+
+   Expansion.Model2<-lm(expansion*100~Arousal_ave+Valence_ave+Gender+Age_years, data=Expansion_merge)
+   
+   Expansion.Model2.df<-Expansion.Model2%>%
+     tidy(.)%>%
+     mutate(estimate=round(estimate,3), std.error=round(std.error,3),statistic=round(statistic ,3),p.value=round(p.value ,3), ci.lower=  estimate-round(std.error*1.96,3), ci.upper=estimate+round(std.error*1.96,3))
+
+  Expansion.Model2.df %>%
+  kbl() %>%
+  kable_styling()
+
+
+Expansion.Model2%>%
+     glance(.)%>%
+  select(where(is.numeric))%>%
+  round(.,3)%>%
+kbl() %>%
+  kable_styling()
+  write.table(Expansion.Model2.df, file="/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Model.Res/Expansion.Mod2.txt",sep="\t")
+
+  
+# Variance Inflation Factor: Looks ok 
+vif(Expansion.Model2)%>%
+kbl() %>%
+  kable_styling()
+ 
+```
+
+
+To summarize similar to the above analysis on children's change in chest height, variation in valence is predictive of the change in children's chest expansion. There is a positive relation between emotion valence and the change in chest expansion. The following plots illustrate the relation between the change in chest expansion and emotion valence. Unlike in the analysis on children's change in chest height, changes in chest expansion were negatively associated with changes in arousal; that is the higher arousal, the lower children's chest expansion was. In addition, older children generally expressed a reduced chest expansion relative to younger children. However, this might be due to specific studies with different experimental manipulations driving the effect. Note: additional plots for the relation between arousal and the change in chest height are still in progress. 
+
+
+### Plots
+```{r message=F}
+  #dev.new()
+  Expansion.Model2.df%>%
+    filter(term!="(Intercept)")%>%
+  ggplot(aes(term,estimate),data.)+
+	geom_errorbar(aes(ymin = ci.lower, ymax=ci.upper), width=.0)+geom_point()+geom_hline(yintercept = 0, linetype="dashed")+coord_flip()+theme_bw(base_size = 12)+ylab("Estimates of Model 2 (Error Bars Indicate \n95% Confidence Intervals)")
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Model.Est.pdf",  width=10, height=6)
+#dev.off()
+
+
+# We can also plot the relation using geom_smooth and the raw data 
+ # dev.new()
+  Expansion_merge%>%
+  ggplot(aes(Valence_ave,expansion*100),data.)+
+	geom_smooth(method=lm)+ylab("Change in Chest Expansion (cm)")
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Rel.Valence.ExpansionHeight.pdf",  width=10, height=6)
+#dev.off()
+
+
+  Expansion_merge$Valence_ave.fct<-as.factor(as.character(  Expansion_merge$Valence_ave))
+# Alternatively we can 'bin' changes in valence into different groups and plot the change in chest expansion height by this factor
+ # dev.new()  
+  Expansion_merge%>%
+    group_by(Valence_ave.fct)%>%
+    summarize( se=se(expansion*100),change=mean(expansion*100), n=length(expansion))%>%
+    mutate(label = paste0(Valence_ave.fct,'\nN = ',n))%>%
+  ggplot(aes(label,change),data.)+
+	geom_bar(stat="identity")+geom_errorbar(aes(ymin = change-se, ymax=change+se), width=.1)+ylab("Change in Body Posture (cm)")+xlab("Valence")
+
+
+#dev.copy(pdf,"/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Plots/Rel.Valence.Fct.ChestHeight.pdf",  width=10, height=6)
+#dev.off()
+```
+
+
+### Exploratory Analysis 
+
+This section is not completed yet. 
+
+````{r message=F, results='hide'}
+Expansion_merge %>%
+  filter(Study=="Move1") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#valence effect: positive
+
+Expansion_merge %>%
+  filter(Study=="Move2") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#positive but almost zero 
+
+Expansion_merge %>%
+  filter(Study=="NeeCo2") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#positive 
+
+Expansion_merge %>%
+  filter(Study=="NeeCo3") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#positive 
+
+Expansion_merge %>%
+  filter(Study=="ProShame1") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#clearly negative 
+
+Expansion_merge %>%
+  filter(Study=="ProShame2") %>%
+  lm(expansion~Arousal_ave+Valence_ave+Gender+Age_years, data=.)%>% 
+  summary()
+#positive 
+# I need to do this more systematically & save the data; however maybe wait until age data has been added; 
+```
+## Hip Height 
+
+This section is not completed. 
+
+
+# Research Question 2 
+
+We wanted to create emotion 'profiles', i.e. plot emotion valence, arousal, chest height, hip height and chest expansion for each discrete emotion. 
+
+## Prepare variables & preliminary plots 
+```{r message=F, results='hide', fig.show='hide'}
+
+Chest_merge$Emotion_c1<-Chest_merge$Emotion_c1%>% 
+  as_factor()
+
+Chest_merge$Emotion_c1<-Chest_merge$Emotion_c1%>% 
+  recode_factor("Disappointment"="Dissapointment","Dissapointment"="Dissapointment","Guilty"="Guilt","pride"="Pride", "shame"="Shame", "No_apparent_emotion"="No apparent \n emotion","no_apparent_emotion"="No apparent \n emotion", "Elated_joy" ="Elated joy")%>%   as_factor()
+
+
+Chest_merge$Emotion_c2<-Chest_merge$Emotion_c2%>% 
+  recode_factor( "No_apparent_emotion"="No apparent \n emotion", "Elated_joy" ="Elated joy")%>%   as_factor()
+
+
+levels(Chest_merge$Emotion_c1)
+Chest_merge$Emotion_c2<-Chest_merge$Emotion_c2%>% 
+  as_factor()
+
+Chest_merge%>%
+  group_by(Emotion_c1)%>%
+  summarize(Mean=mean(chest), se=se(chest))%>%
+  ggplot(aes(y=Mean,x=Emotion_c1),data=.)+
+  geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se))
+
+
+
+Chest_merge%>%
+  group_by(Emotion_c2)%>%
+  summarize(Mean=mean(chest), se=se(chest))%>%
+  ggplot(aes(y=Mean,x=Emotion_c2),data=.)+
+  geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se))
+
+
+
+Expansion_merge$Emotion_c1<-Expansion_merge$Emotion_c1%>% 
+  as_factor()
+
+Expansion_merge$Emotion_c1<-Expansion_merge$Emotion_c1%>% 
+  recode_factor("Disappointment"="Dissapointment","Disappointment"="Dissapointment","Guilty"="Guilt","pride"="Pride", "shame"="Shame", "no_apparent_emotion"="No apparent \n emotion", "No_apparent_emotion"="No apparent \n emotion","Elated_joy" ="Elated joy")%>%   as_factor()
+
+
+
+Expansion_merge$Emotion_c2<-Expansion_merge$Emotion_c2%>% 
+  recode_factor( "No_apparent_emotion"="No apparent \n emotion", "Elated_joy" ="Elated joy")%>%   as_factor()
+
+
+levels(
+Expansion_merge$Emotion_c2)
+setdiff(levels(
+Chest_merge$Emotion_c1),levels(
+Expansion_merge$Emotion_c1))
+
+Expansion_merge$Emotion_c2<-Expansion_merge$Emotion_c2%>% 
+  as_factor()
+
+
+
+Expansion_merge%>%
+  group_by(Emotion_c2)%>%
+  summarize(Mean=mean(expansion), se=se(expansion))%>%
+  ggplot(aes(y=Mean,x=Emotion_c2),data=.)+
+  geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se))
+
+
+Expansion_merge%>%
+  group_by(Emotion_c1)%>%
+  summarize(Mean=mean(expansion), se=se(expansion))%>%
+  ggplot(aes(y=Mean,x=Emotion_c1),data=.)+
+  geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se))
+
+
+```
+
+
+## Part I: Arousal and Valence By Emotion 
+```{r message=F}
+Expansion_merge$Coder1<-paste(Expansion_merge$Emotion_cue_c1, Expansion_merge$Emotion_c1, sep="-")
+
+Expansion_merge$Coder2<-paste(Expansion_merge$Emotion_cue_c2, Expansion_merge$Emotion_c2, sep="-")
+
+
+Emotion_cue_long<-Expansion_merge%>%
+  pivot_longer(c(Coder1, Coder2), names_to = "Emotion_coder", values_to = "Cue_Emotion")
+Emotion_cue_long<-Emotion_cue_long%>%
+ separate(Cue_Emotion,c("Cue","Emotion"), sep="-")
+
+
+arousal_val<-Emotion_cue_long%>%
+  group_by(Emotion)%>%
+  summarize( Valence=mean(Valence_ave), Arousal=mean(Arousal_ave), n=length(Arousal_ave))
+
+arousal_val%>%
+  ggplot(aes(Valence, Arousal, label=Emotion), data=.)+geom_point()+ylim(2,4.5)+xlim(2,5)+geom_hline(yintercept=3, linetype="dashed",color="grey" )+geom_vline(xintercept=3, linetype="dashed",color="grey" )+xlab("Emotion Valence;\n1 = very negative, 3 = neutral, 5 = very positive")+ylab("Emotion Arousal;\n1 = very calm, 3 = neutral, 5 = very aroused")+geom_text_repel(aes(label = Emotion),
+                   box.padding = unit(0.5, "lines"),
+    point.padding = unit(0.7, "lines")) +theme_bw(base_size = 12)
+
+`````
+
+The above plot illustrates the values valence and arousal for each discrete emotion. 
+
+## Part II: Change in Body Posture By Emotion 
+### Prepare data 
+````{r message=F, results='hide'}
+nrow(Expansion_merge)
+Large<-right_join(Expansion_merge, Chest_merge)
+levels(Large$Emotion_c1)
+Large_1<-Large%>%
+  pivot_longer(c(expansion, chest), names_to = "Data_type", values_to = "Change")
+head(Large_1)
+Large_2<-Large_1%>%
+  pivot_longer(c(Emotion_c1, Emotion_c2), names_to = "Emotion_coder", values_to = "Emotion")
+nrow(Large_2)
+
+
+
+Large_2$Emotion<-as.factor(Large_2$Emotion)
+
+
+Large_2$Emotion<-Large_2$Emotion%>% 
+  recode_factor("Dissapointment"="Disappointment")%>%   as_factor()
+
+levels(Large_2$Emotion)
+
+`````
+
+
+### Plots 
+````{r message=F}
+Large_2 <- Large_2 %>%
+  mutate(emotion_type = case_when(Emotion == "Anger"  ~ "Neg", 
+                                Emotion == "Shame" ~ "Neg",
+                                Emotion == "Disappointment" ~ "Neg", 
+                                Emotion == "Guilt" ~ "Pos", 
+                                Emotion=="Sadness"~ "Neg", 
+                                Emotion=="Happiness"~ "Pos", 
+                                Emotion=="Elated joy"~"Pos", 
+                                Emotion=="Contentment"~"Neg", 
+                                Emotion=="Awe"~"Pos",
+                                Emotion=="Pride"~"Pos",
+                                Emotion=="No apparent \n emotion"~"Pos"))
+
+
+##Figure out the order: 
+
+table<-Large_2%>%
+  group_by(Emotion)%>%
+  summarize(Mean=mean(Change), se=se(Change), n=length(Change))
+
+##Figure out the order: 
+
+order_table<-Large_2%>%
+  group_by(Emotion,emotion_type)%>%
+  summarize(GrandMean=mean(Change)) %>%
+  arrange(desc(GrandMean))
+
+order_table_2<-rbind(order_table,order_table)
+
+
+order_table_2$Data_type<-c(rep("expansion",11), rep("chest",11))
+order_table_2_neg<-order_table_2%>%
+filter(emotion_type=="Neg")
+
+
+order_table_2_pos<-order_table_2%>%
+filter(emotion_type=="Pos")
+
+#Negative emotions 
+table_neg<-Large_2%>%
+  filter(emotion_type=="Neg")%>%
+  group_by(Emotion, Data_type)%>%
+  summarize(Mean=mean(Change), se=se(Change), n=length(Change))%>%
+  mutate(label = paste0(Emotion,'\nN = ',n))
+
+
+table_neg_2<-full_join(table_neg, order_table_2_neg)
+
+
+table_neg_2%>%
+  ggplot(aes(y=Mean,x=reorder(factor(label), +GrandMean),fill=Data_type),data=.)+
+  geom_bar(stat="identity", color="black",position=pd)+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se), position=pd,  width = 0.4)+ylab("Change in Body Posture (cm)")+theme_bw(base_size = 12)+
+  scale_fill_npg(name = "Data Type",  labels = c("Change in Chest Height (cm)","Change in Chest Expansion (cm)°"))+theme(legend.position = "top")+xlab("Emotion")+scale_y_continuous(breaks=c(-.02,-.01,0,.01), limits=c(-0.025,0.015), labels=c(-2,-1,0,1))
+
+
+#Positive Emotions 
+table_pos<-Large_2%>%
+  filter(emotion_type=="Pos")%>%
+  group_by(Emotion, Data_type)%>%
+  summarize(Mean=mean(Change), se=se(Change), n=length(Change), Valence=mean(Valence_ave))%>%
+  mutate(label = paste0(Emotion,'\nN = ',n))
+
+table_pos_2<-full_join(table_pos, order_table_2_pos)
+
+pd<-position_dodge(0.9)
+table_pos_2%>%
+  ggplot(aes(y=Mean,x=reorder(factor(label), +GrandMean),fill=Data_type),data=.)+
+  geom_bar(stat="identity", color="black",position=pd)+
+	geom_errorbar(aes(ymin = Mean-se, ymax=Mean+se), position=pd,  width = 0.4)+ylab("Change in Body Posture (cm)")+theme_bw(base_size = 12)+
+  scale_fill_npg(name = "Data Type",  labels = c("Change in Chest Height (cm)","Change in Chest Expansion (cm)°"))+theme(legend.position = "top")+xlab("Emotion")+scale_y_continuous(breaks=c(-.02,-.01,0,.01), limits=c(-0.025,0.015), labels=c(-2,-1,0,1))
+
+`````
+
+The above emotions are sorted from the emotion with the most lowered average body posture (Anger) to the emotion with the most elevated body posture (Awe)
+
+
+# Research Question 3
+
+Which emotion cues did coders use to identify discrete emotions? 
+
+```{r}
+
+Emotion_cue_long$Cue<-Emotion_cue_long$Cue%>% 
+  recode_factor("Angry_facial_expression,"="Angry_facial_expression", "none"="None", "Slight_smile,"="Slight_smile", "slumbed_shoulders"="slumped_shoulders", "arm_movement_upwards,"="arm_movement_upwards", "smile"="Smile", "head_tilted_down,"="head_tilted_down", "smile_with_an_open_mouth,"="smile_with_an_open_mouth", "raised_eyebrows"="Raised_eyebrows", "slightly_opened_mouth,"="slightly_opened_mouth","slight_smile"="Slight_smile", "guilty_smile"="Guilty_smile", "head_tilted_upwards"=	"head_tilted_upward")%>%   as_factor()
+
+
+arousal_val<-Emotion_cue_long%>%
+  group_by(Emotion)%>%
+   count(as.factor(Cue)) %>%
+ arrange(., Emotion, -n)
+
+arousal_val %>%kbl() %>%
+  kable_styling()
+
+````

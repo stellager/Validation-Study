@@ -1,0 +1,7 @@
+"Estimate"	"Std. Error"	"t value"	"Pr(>|t|)"
+"(Intercept)"	0.04	0.031	1.27	0.205
+"Arousal_ave"	-0.013	0.009	-1.545	0.123
+"Valence_ave"	-0.007	0.009	-0.737	0.461
+"Genderm"	0.003	0.003	1.095	0.274
+"Age_years"	-0.002	0.002	-1.144	0.253
+"Arousal_ave:Valence_ave"	0.003	0.002	1.225	0.221

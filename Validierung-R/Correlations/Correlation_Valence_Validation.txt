@@ -1,0 +1,7 @@
+"Study" "COR"
+"1" "Move1" 0.61
+"2" "Move2" 0.67
+"3" "NeeCo2" 0.42
+"4" "NeeCo3" 0.65
+"5" "ProShame1" 0.64
+"6" "ProShame2" 0.56

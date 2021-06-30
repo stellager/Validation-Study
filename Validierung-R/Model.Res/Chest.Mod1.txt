@@ -1,0 +1,7 @@
+"term"	"estimate"	"std.error"	"statistic"	"p.value"	"ci.lower"	"ci.upper"
+"1"	"(Intercept)"	3.987	3.141	1.27	0.205	-2.169	10.143
+"2"	"Arousal_ave"	-1.322	0.856	-1.545	0.123	-3	0.356
+"3"	"Valence_ave"	-0.656	0.89	-0.737	0.461	-2.4	1.088
+"4"	"Genderm"	0.332	0.303	1.095	0.274	-0.262	0.926
+"5"	"Age_years"	-0.196	0.171	-1.144	0.253	-0.531	0.139
+"6"	"Arousal_ave:Valence_ave"	0.291	0.237	1.225	0.221	-0.174	0.756

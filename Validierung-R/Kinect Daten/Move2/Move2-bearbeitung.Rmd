@@ -1,0 +1,123 @@
+---
+title: "Move2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+rm(list = ls(all = TRUE))
+
+setwd("/Volumes/feuk/HAUN LAB/STUDIEN/STELLA/Validierungsstudie/Validierung-R/Kinect Daten/Move2")
+library(sciplot)
+library(tidyverse)
+move2.chest<-read.table("Kinect_move2_chest.txt", header=T)
+move2.hip<-read.table("Kinect_move2_hip.txt", header=T)
+move2.ages<-read.table("Move2_ages.txt", header=T)
+
+colnames(move2.chest)
+move2.chest$expansion<-move2.chest$Change-move2.hip$Change
+
+# chest expansion 
+move2.chest.expansion.ave<-move2.chest %>% 
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase ) %>% 
+	summarize(expansion=mean(expansion)) 
+
+dev.new()
+move2.chest.expansion.ave	%>% 
+  drop_na()	%>%
+	group_by( Help  ,Condition  )%>% 
+	summarize(se=se(expansion),expansion=mean(expansion)) %>% 
+	ggplot(aes(Help  , expansion,  fill=Condition))+
+	geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = expansion-se, ymax=expansion+se), position="dodge")+ggtitle("Move2")
+
+dev.copy(pdf,"expansion.pdf", width=6, height=6)
+dev.off()
+
+	
+length(unique(move2.chest.expansion.ave$Subject))
+move2.chest.expansion.ave %>% 
+	lm(expansion~Help+Condition+Phase, data=.)%>% 
+	summary()
+
+move2.ages <-move2.ages %>% rename("Subject"="ID")
+move2.chest.expansion.ave<-right_join(move2.ages, move2.chest.expansion.ave)
+
+write.table(move2.chest.expansion.ave, file="move2.expansion.ave.txt" )
+
+move2.chest.expansion.ave  %>% 
+  drop_na()%>% 
+  select(Subject)%>% 
+  n_distinct()
+
+
+move2.chest.ave<-move2.chest %>% 
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase) %>% 
+	summarize(chest=mean(Change)) 
+
+dev.new()
+	move2.chest.ave	%>% 
+	drop_na() %>% 
+	group_by( Help  ,Condition  )%>% 
+	summarize(se=se(chest),chest=mean(chest)) %>% 
+	ggplot(aes(Help  , chest,  fill=Condition))+
+	geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = chest-se, ymax=chest+se), position="dodge")+ggtitle("Move2")
+dev.copy(pdf,"chest.pdf", width=6, height=6)
+dev.off()
+
+
+	
+move2.chest.expansion.ave %>% 
+	lm(chest~Help+Condition+Phase, data=.)%>% 
+	summary()
+
+move2.chest.ave<-right_join(move2.ages, move2.chest.ave)
+
+write.table(move2.chest.ave, file="move2.chest.ave.txt" )
+
+
+
+# hip height
+move2.hip.ave<-move2.hip %>% 
+	group_by(Subject,Gender,Help,Condition,Team     ,Phase)  %>% 
+	summarize(hip=mean(Change)) 
+	
+	move2.hip.ave	%>% 
+	drop_na() %>% 
+	group_by( Help  ,Condition  )%>% 
+	summarize(se=se(hip),hip=mean(hip)) %>% 
+	ggplot(aes(Help  , hip,  fill=Condition))+
+	geom_bar(stat="identity", position="dodge")+
+	geom_errorbar(aes(ymin = hip-se, ymax=hip+se), position="dodge")
+
+move2.hip.ave %>% 
+	lm(hip~Help+Condition+Phase, data=.)%>% 
+	summary()
+
+
+move2.hip.ave<-right_join(move2.ages, move2.hip.ave)
+
+write.table(move2.hip.ave, file="move2.hip.ave.txt" )
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
